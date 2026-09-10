@@ -30,7 +30,9 @@ function runDispatcher(mode, toolName, env = {}) {
   const raw = JSON.stringify({
     hook_event_name: 'PostToolUse',
     tool_name: toolName,
-    tool_input: toolName === 'Bash' ? { command: 'true' } : { file_path: path.join(os.tmpdir(), 'ecc-posttooluse-test.txt') },
+    tool_input: ['Bash', 'PowerShell'].includes(toolName)
+      ? { command: 'true' }
+      : { file_path: path.join(os.tmpdir(), 'ecc-posttooluse-test.txt') },
     tool_response: {}
   });
 
@@ -82,7 +84,7 @@ function runTests() {
         entries.map(entry => entry.id),
         ['post:dispatcher:sync', 'post:dispatcher:async']
       );
-      assert.ok(entries.every(entry => entry.matcher === '*'));
+      assert.ok(entries.every(entry => entry.matcher === '.*'));
       assert.strictEqual(entries[0].hooks[0].async, undefined);
       assert.strictEqual(entries[1].hooks[0].async, true);
       assert.ok(entries[0].hooks[0].command.includes('posttooluse-dispatcher.js'));
@@ -125,6 +127,16 @@ function runTests() {
           tool: 'Bash',
           sync: ['post:governance-capture', 'post:session-activity-tracker', 'post:ecc-metrics-bridge', 'post:ecc-context-monitor'],
           async: ['post:bash:dispatcher', 'post:observe:continuous-learning']
+        },
+        {
+          tool: 'PowerShell',
+          sync: ['post:governance-capture', 'post:session-activity-tracker', 'post:ecc-metrics-bridge', 'post:ecc-context-monitor'],
+          async: ['post:observe:continuous-learning']
+        },
+        {
+          tool: 'powershell',
+          sync: ['post:governance-capture', 'post:session-activity-tracker', 'post:ecc-metrics-bridge', 'post:ecc-context-monitor'],
+          async: ['post:observe:continuous-learning']
         },
         {
           tool: 'Read',
